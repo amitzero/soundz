@@ -1,0 +1,42 @@
+name: soundz
+description: A new Flutter project.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.16.2 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  just_audio: ^0.9.21
+  just_audio_background: ^0.0.1-beta.5
+  page_transition: ^2.0.5
+  provider: ^6.0.2
+  youtube_explode_dart: ^1.11.0
+  marquee: ^2.2.1
+  audio_session: ^0.1.6+1
+  just_audio_libwinmedia: ^0.0.4
+  rxdart: ^0.27.3
+  palette_generator: ^0.3.3
+  sqflite_common_ffi: ^2.1.1
+  sqflite: ^2.0.2+1
+  connectivity_plus: ^2.3.0
+  crypto: ^3.0.2
+  # shared_preferences: ^2.0.15
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^1.0.0
+
+flutter:
+
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/images/
+  #   - images/a_dot_ham.jpeg
