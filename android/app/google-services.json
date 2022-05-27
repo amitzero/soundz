@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "504289060385",
+    "project_id": "zeroin-music",
+    "storage_bucket": "zeroin-music.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:504289060385:android:930f47e864d6b1d9d1a560",
+        "android_client_info": {
+          "package_name": "com.zero.soundz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "504289060385-jdfjb0vp9ktip0tjnjtt487aeb43j032.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGyeqlX0F-5kGefXCzHicty3mUhwmr9Wk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "504289060385-jdfjb0vp9ktip0tjnjtt487aeb43j032.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

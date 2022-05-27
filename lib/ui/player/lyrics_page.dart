@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:soundz/model/music_data.dart';
@@ -12,6 +14,13 @@ class LyricsPage extends StatelessWidget {
     var musicData = context.watch<MusicData>();
     return SafeArea(
       child: Scaffold(
+        appBar: Platform.isAndroid
+            ? null
+            : AppBar(
+                centerTitle: true,
+                elevation: 0,
+                backgroundColor: musicData.backgroundColor,
+              ),
         backgroundColor: musicData.backgroundColor,
         body: Hero(
           tag: 'lyrics_hero',

@@ -19,8 +19,6 @@ class MusicData with ChangeNotifier {
   String? playListAuthor;
   Color forgroundColor = Colors.white;
   Color backgroundColor = Colors.blue.shade900;
-  List<Music>? homeMusics;
-  Function([bool])? homeState;
 
   MusicData(this.player, this.database) {
     player.currentIndexStream.listen((event) {
@@ -30,6 +28,7 @@ class MusicData with ChangeNotifier {
         var item = player.sequence![event].tag as MediaItem;
         _music = musics!.firstWhere(
           (music) => music.title == item.title,
+          orElse: () => musics!.first,
         );
         if (_music == null) {
           log('playing music isn\'t in list', name: runtimeType.toString());
@@ -96,9 +95,9 @@ class MusicData with ChangeNotifier {
   }
 
   Future loadPreviousState() async {
+    if (musics != null) return;
     if (await database.getKeyValue('playlist') == 'Favorite') {
       var index = await database.getKeyValue('index');
-      log('index: $index', name: 'loadPreviousState');
       if (index.isEmpty) return;
       int i = int.parse(index);
       await addPlayList(

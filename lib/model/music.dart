@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
-class Music {
+class Music with ChangeNotifier {
   int? serialNumber;
   String id;
   String title;
@@ -11,7 +12,7 @@ class Music {
   Duration duration;
   String thumbnail;
   ClosedCaptionTrack? caption;
-  bool favorite;
+  bool _favorite;
   Uri? cacheLink;
   File? cacheThumbnail;
   StreamController<double>? progress;
@@ -24,10 +25,10 @@ class Music {
     required this.duration,
     required this.thumbnail,
     this.caption,
-    this.favorite = false,
+    bool favorite = false,
     this.cacheLink,
     this.cacheThumbnail,
-  });
+  }) : _favorite = favorite;
 
   String get fileData => '$id.song';
   String get fileArt => '$id.art';
@@ -41,7 +42,7 @@ class Music {
       'duration': duration.inMilliseconds,
       'thumbnail': thumbnail,
       'caption': caption?.toJson(),
-      'favoirite': favorite,
+      'favoirite': _favorite,
     };
   }
 
@@ -55,7 +56,14 @@ class Music {
         caption = map['caption'] != null
             ? ClosedCaptionTrack.fromJson(map['caption'])
             : null,
-        favorite = map['favoirite'];
+        _favorite = map['favoirite'];
+
+  set favorite(bool favorite) {
+    _favorite = favorite;
+    notifyListeners();
+  }
+
+  bool get favorite => _favorite;
 
   @override
   String toString() {
@@ -67,4 +75,22 @@ class Music {
 
   @override
   bool operator ==(Object other) => other is Music && id == other.id;
+
+  static final empty = Music(
+    id: '',
+    title: '',
+    artist: '',
+    link: Uri.base,
+    duration: Duration.zero,
+    thumbnail: '',
+    caption: null,
+    favorite: false,
+  );
+}
+
+extension CustomMusicList on List<Music> {
+  void clearAndAddEmptyMusic() {
+    clear();
+    add(Music.empty);
+  }
 }

@@ -5,7 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
+import 'package:soundz/model/home_data.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:firebase_core/firebase_core.dart';
 
+import 'package:soundz/firebase_options.dart';
 import 'package:soundz/model/music_data.dart';
 import 'package:soundz/ui/favorite_page.dart';
 import 'package:soundz/ui/home_page.dart';
@@ -13,8 +18,6 @@ import 'package:soundz/ui/player/player_view.dart';
 import 'package:soundz/model/route_data.dart';
 import 'package:soundz/ui/search_page.dart';
 import 'package:soundz/ui/setting_page.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:soundz/model/utilities.dart' show KeyValue;
 
 Future<void> main() async {
@@ -34,6 +37,9 @@ Future<void> main() async {
   } else {
     database = await databaseFactoryFfi.openDatabase('tempinmemorydb.db');
   }
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
     MaterialApp(
@@ -90,9 +96,15 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<RouteData>(create: (_) => RouteData()),
+        ChangeNotifierProvider<RouteData>(
+          create: (_) => RouteData(),
+        ),
         ChangeNotifierProvider<MusicData>(
-            create: (_) => MusicData(_player, widget.database)),
+          create: (_) => MusicData(_player, widget.database),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => HomeData(),
+        )
       ],
       builder: (context, child) {
         var musicData = context.read<MusicData>();

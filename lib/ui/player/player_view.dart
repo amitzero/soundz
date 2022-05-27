@@ -3,6 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:marquee/marquee.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
+
 import 'package:soundz/model/music_data.dart';
 import 'package:soundz/model/route_data.dart';
 import 'package:soundz/ui/player/player_page.dart';
@@ -69,27 +70,34 @@ class PlayerView extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SizedBox(
-                        width: 100,
-                        child: Text(
-                          musicData.music!.artist,
-                          style: style.copyWith(fontSize: style.fontSize! - 2),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                      Flexible(
+                        child: SizedBox(
+                          width: 100,
+                          child: Text(
+                            musicData.music!.artist,
+                            style:
+                                style.copyWith(fontSize: style.fontSize! - 2),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         ),
                       ),
-                      StreamBuilder<Duration>(
-                        stream: musicData.player.positionStream,
-                        builder: (context, snapshot) {
-                          Duration duration = snapshot.data ?? Duration.zero;
-                          return Text(
-                            '${RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$').firstMatch('$duration')?.group(1) ?? '$duration'}/${RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$').firstMatch('${musicData.music!.duration}')?.group(1) ?? '${musicData.music!.duration}'}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .caption!
-                                .copyWith(color: musicData.forgroundColor),
-                          );
-                        },
+                      Flexible(
+                        child: StreamBuilder<Duration>(
+                          stream: musicData.player.positionStream,
+                          builder: (context, snapshot) {
+                            Duration duration = snapshot.data ?? Duration.zero;
+                            return Text(
+                              '${RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$').firstMatch('$duration')?.group(1) ?? '$duration'}/${RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$').firstMatch('${musicData.music!.duration}')?.group(1) ?? '${musicData.music!.duration}'}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .caption!
+                                  .copyWith(color: musicData.forgroundColor),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -162,3 +170,64 @@ class PlayerView extends StatelessWidget {
     );
   }
 }
+
+// class TextMarquee extends StatefulWidget {
+//   const TextMarquee(
+//     this.data, {
+//     Key? key,
+//     this.style,
+//   }) : super(key: key);
+
+//   final String data;
+//   final TextStyle? style;
+
+//   @override
+//   State<TextMarquee> createState() => _TextMarqueeState();
+// }
+
+// class _TextMarqueeState extends State<TextMarquee> {
+//   late Text text;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     text = Text('XXZAWQESDMXXZAWQESDMXXZAWQESDM'.toLowerCase(),
+//         style: widget.style);
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     // return Marquee(
+//     //   text: data,
+//     //   style: style,
+//     //   blankSpace: 100,
+//     //   pauseAfterRound: const Duration(seconds: 1),
+//     // );
+//     return LayoutBuilder(builder: (context, constraints) {
+//       log('$constraints');
+//       return ListView.builder(
+//         scrollDirection: Axis.horizontal,
+//         itemBuilder: (context, index) {
+//           log('${TextPainter(
+//             text: const TextSpan(text: 'Hello'),
+//             maxLines: 1,
+//           ).size.width}'); //171 = 6.84, 207= 6.9, 103=6.867
+//           // return index.isEven
+//           //     ? SizedBox(
+//           //         width:
+//           //             ((text.style?.fontSize ?? 14) / 1.4) * text.data!.length,
+//           //         child: Row(
+//           //           children: [
+//           //             text,
+//           //           ],
+//           //         ))
+//           //     : const SizedBox(width: 0);
+//           return RichText(
+//             text: TextSpan(text: 'Hello'),
+//             textWidthBasis: TextWidthBasis.longestLine,
+//           );
+//         },
+//       );
+//     });
+//   }
+// }

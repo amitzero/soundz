@@ -108,27 +108,37 @@ class _PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
         .bodyMedium!
         .copyWith(color: musicData.forgroundColor);
     var landscape = MediaQuery.of(context).size.aspectRatio >= 1;
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _animation.value),
-          child: child,
-        );
+    return WillPopScope(
+      onWillPop: () async {
+        if (context.read<RouteData>().showPlaylist) {
+          context.read<RouteData>().showPlaylist = false;
+          return false;
+        } else {
+          return true;
+        }
       },
-      child: SafeArea(
-        child: Scaffold(
-          bottomSheet: PlaylistPage(_playListAnimation),
-          body: AnimatedContainer(
-            duration: const Duration(seconds: 1),
-            color: musicData.backgroundColor,
-            child: NotificationListener<ScrollNotification>(
-              onNotification: _onNotification,
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: landscape
-                    ? LandscapeView(style: style)
-                    : PotraitView(style: style),
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, _animation.value),
+            child: child,
+          );
+        },
+        child: SafeArea(
+          child: Scaffold(
+            bottomSheet: PlaylistPage(_playListAnimation),
+            body: AnimatedContainer(
+              duration: const Duration(seconds: 1),
+              color: musicData.backgroundColor,
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _onNotification,
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: landscape
+                      ? LandscapeView(style: style)
+                      : PotraitView(style: style),
+                ),
               ),
             ),
           ),

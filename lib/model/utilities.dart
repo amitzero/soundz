@@ -28,20 +28,8 @@ class Utilities {
   static Future<List<Music>> addPlaylistToCache(List<Music> list) async {
     var yt = YoutubeExplode();
     for (var music in list) {
-      log(
-        'cache:: ${music.id} [${music.link.toString().length}]',
-        name: Utilities.appName,
-      );
       var data = File(await _fullPath(music.fileData));
-      log(
-        data.path,
-        name: Utilities.appName,
-      );
       if (data.existsSync()) {
-        log(
-          'Data already downloaded for ${music.title}',
-          name: Utilities.appName,
-        );
         music.cacheLink = data.uri;
       } else {
         try {
@@ -51,10 +39,6 @@ class Utilities {
           var fileStream = temp.openWrite();
           var audioInfo = manifest.audioOnly.withHighestBitrate();
           var fileSize = audioInfo.size.totalBytes;
-          log(
-            'size in bytes:: $fileSize',
-            name: Utilities.appName,
-          );
           var downloadedSize = 0;
           music.progress ??= StreamController();
           await for (var data in yt.videos.streamsClient.get(audioInfo)) {
@@ -64,10 +48,6 @@ class Utilities {
           }
           await fileStream.flush();
           await fileStream.close();
-          log(
-            'Data downloaded for ${music.title}',
-            name: Utilities.appName,
-          );
           temp.renameSync(data.path);
           music.cacheLink = data.uri;
           // music.progress?.add(double.maxFinite);
@@ -87,10 +67,6 @@ class Utilities {
       music.stream = null;
       var art = File(await _fullPath(music.fileArt));
       if (art.existsSync()) {
-        log(
-          'Art already downloaded for ${music.title}',
-          name: Utilities.appName,
-        );
         music.cacheThumbnail = art;
       } else {
         try {
@@ -106,10 +82,6 @@ class Utilities {
             var bytes = await consolidateHttpClientResponseBytes(response);
             await temp.writeAsBytes(bytes);
             temp.renameSync(art.path);
-            log(
-              'Art downloaded for ${music.title}',
-              name: Utilities.appName,
-            );
             music.cacheThumbnail = art;
           } else {
             log(
@@ -142,18 +114,10 @@ class Utilities {
       music.serialNumber = e['id'] as int;
       var data = File(await _fullPath(music.fileData));
       if (data.existsSync()) {
-        log(
-          'DB Data exists for ${music.title}',
-          name: Utilities.appName,
-        );
         music.cacheLink = data.uri;
       }
       var art = File(await _fullPath(music.fileArt));
       if (art.existsSync()) {
-        log(
-          'DB Art exists for ${music.title}',
-          name: Utilities.appName,
-        );
         music.cacheThumbnail = art;
       }
       musics.add(music);
@@ -185,18 +149,10 @@ class Utilities {
       );
       var data = File(await _fullPath(music.fileData));
       if (data.existsSync()) {
-        log(
-          'Data exists for ${music.title}',
-          name: Utilities.appName,
-        );
         music.cacheLink = data.uri;
       }
       var art = File(await _fullPath(music.fileArt));
       if (art.existsSync()) {
-        log(
-          'Art exists for ${music.title}',
-          name: Utilities.appName,
-        );
         music.cacheThumbnail = art;
       }
       yield music;
@@ -257,18 +213,10 @@ class Utilities {
       );
       var data = File(await _fullPath(music.fileData));
       if (data.existsSync()) {
-        log(
-          'Data exists for ${music.title}',
-          name: Utilities.appName,
-        );
         music.cacheLink = data.uri;
       }
       var art = File(await _fullPath(music.fileArt));
       if (art.existsSync()) {
-        log(
-          'Art exists for ${music.title}',
-          name: Utilities.appName,
-        );
         music.cacheThumbnail = art;
       }
       yield music;

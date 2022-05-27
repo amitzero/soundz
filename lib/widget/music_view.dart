@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -33,13 +34,10 @@ class _MusicViewState extends State<MusicView> {
   void initState() {
     super.initState();
     music = widget.music;
+    if (music.toJson().toString().contains('file')) {
+      log(music.toJson().toString());
+    }
   }
-
-  // @override
-  // void dispose() {
-  //   music.progress?.stream.
-  //   super.dispose();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -90,23 +88,29 @@ class _MusicViewState extends State<MusicView> {
           }
         },
       ),
-      trailing: IconButton(
-        icon: Icon(
-          music.favorite ? Icons.favorite : Icons.favorite_border,
-          color: music.favorite ? Colors.red : Colors.black,
-        ),
-        onPressed: () {
-          setState(() {
-            music.favorite = !music.favorite;
-            if (music.favorite) {
+      trailing: ChangeNotifierProvider.value(
+        value: music,
+        builder: (context, child) {
+          Music m = context.watch<Music>();
+          return IconButton(
+            icon: Icon(
+              m.favorite ? Icons.favorite : Icons.favorite_border,
+              color: m.favorite ? Colors.red : widget.color,
+            ),
+            onPressed: () {
               setState(() {
-                music.progress = StreamController<double>();
+                m.favorite = !m.favorite;
+                if (m.favorite) {
+                  setState(() {
+                    m.progress = StreamController<double>();
+                  });
+                }
+                context.read<MusicData>().setFavorite(m);
               });
-            }
-            context.read<MusicData>().setFavorite(music);
-          });
-          music.progress?.add(0);
-          widget.onFavoriteChange?.call();
+              m.progress?.add(0);
+              widget.onFavoriteChange?.call();
+            },
+          );
         },
       ),
       onTap: widget.onTap,
