@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -13,7 +14,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:soundz/firebase_options.dart';
 import 'package:soundz/model/music_data.dart';
 import 'package:soundz/ui/favorite_page.dart';
-import 'package:soundz/ui/home_page.dart';
+import 'package:soundz/ui/home/home_page.dart';
 import 'package:soundz/ui/player/player_view.dart';
 import 'package:soundz/model/route_data.dart';
 import 'package:soundz/ui/search_page.dart';
@@ -30,15 +31,16 @@ Future<void> main() async {
   final session = await AudioSession.instance;
   await session.configure(const AudioSessionConfiguration.music());
 
-  sqfliteFfiInit();
-  late Database database;
-  if (Platform.isAndroid) {
-    database = await openDatabase('tempinmemorydb.db');
-  } else {
-    database = await databaseFactoryFfi.openDatabase('tempinmemorydb.db');
+  Database? database;
+  if (!kIsWeb) {
+    if (Platform.isWindows) {
+      sqfliteFfiInit();
+      database = await databaseFactoryFfi.openDatabase('tempinmemorydb.db');
+    } else if (Platform.isAndroid) {
+      database = await openDatabase('tempinmemorydb.db');
+    }
   }
 
-  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
@@ -51,7 +53,7 @@ Future<void> main() async {
 
 class MyApp extends StatefulWidget {
   const MyApp(this.database, {Key? key}) : super(key: key);
-  final Database database;
+  final Database? database;
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -62,20 +64,20 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    widget.database.execute('''
+    widget.database?.execute('''
       CREATE TABLE IF NOT EXISTS favorite (
         id INTEGER PRIMARY KEY,
         title TEXT,
         data TEXT
       )
     ''');
-    widget.database.createKeyValueTable();
+    widget.database?.createKeyValueTable();
   }
 
   @override
   void dispose() {
     _player.dispose();
-    widget.database.close();
+    widget.database?.close();
     super.dispose();
   }
 

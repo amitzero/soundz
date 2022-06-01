@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -15,8 +14,7 @@ class Music with ChangeNotifier {
   bool _favorite;
   Uri? cacheLink;
   File? cacheThumbnail;
-  StreamController<double>? progress;
-  Stream<double>? stream;
+  double _progress = double.infinity;
   Music({
     required this.id,
     required this.title,
@@ -32,6 +30,17 @@ class Music with ChangeNotifier {
 
   String get fileData => '$id.song';
   String get fileArt => '$id.art';
+  bool get favorite => _favorite;
+  set favorite(bool favorite) {
+    _favorite = favorite;
+    notifyListeners();
+  }
+  double get progress => _progress;
+  set progress(double progress) {
+    _progress = progress;
+    notifyListeners();
+  }
+  String get cacheTitle => '${cacheLink == null ? '' : '🔹'}$title';
 
   Map<String, dynamic> toJson() {
     return {
@@ -58,12 +67,6 @@ class Music with ChangeNotifier {
             : null,
         _favorite = map['favoirite'];
 
-  set favorite(bool favorite) {
-    _favorite = favorite;
-    notifyListeners();
-  }
-
-  bool get favorite => _favorite;
 
   @override
   String toString() {
@@ -86,11 +89,4 @@ class Music with ChangeNotifier {
     caption: null,
     favorite: false,
   );
-}
-
-extension CustomMusicList on List<Music> {
-  void clearAndAddEmptyMusic() {
-    clear();
-    add(Music.empty);
-  }
 }

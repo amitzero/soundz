@@ -4,15 +4,15 @@ import 'package:soundz/model/music_data.dart';
 import 'package:soundz/model/route_data.dart';
 import 'package:soundz/widget/music_view.dart';
 
-class PlaylistPage extends StatefulWidget {
+class PlaylistView extends StatefulWidget {
   final AnimationController animation;
-  const PlaylistPage(this.animation, {Key? key}) : super(key: key);
+  const PlaylistView(this.animation, {Key? key}) : super(key: key);
 
   @override
-  State<PlaylistPage> createState() => _PlaylistPageState();
+  State<PlaylistView> createState() => _PlaylistViewState();
 }
 
-class _PlaylistPageState extends State<PlaylistPage> {
+class _PlaylistViewState extends State<PlaylistView> {
   late double height;
   late AnimationController _animation;
 

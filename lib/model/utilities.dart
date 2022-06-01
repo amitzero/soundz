@@ -40,19 +40,15 @@ class Utilities {
           var audioInfo = manifest.audioOnly.withHighestBitrate();
           var fileSize = audioInfo.size.totalBytes;
           var downloadedSize = 0;
-          music.progress ??= StreamController();
           await for (var data in yt.videos.streamsClient.get(audioInfo)) {
             fileStream.add(data);
             downloadedSize += data.length;
-            music.progress?.add((downloadedSize / fileSize));
+            music.progress = downloadedSize / fileSize;
           }
           await fileStream.flush();
           await fileStream.close();
           temp.renameSync(data.path);
           music.cacheLink = data.uri;
-          // music.progress?.add(double.maxFinite);
-          // music.progress?.close();
-          // music.progress = null;
         } catch (e) {
           log(
             'Error downloading ${music.title}',
@@ -61,10 +57,7 @@ class Utilities {
           );
         }
       }
-      music.progress?.add(double.maxFinite);
-      music.progress?.close();
-      music.progress = null;
-      music.stream = null;
+      music.progress = double.infinity;
       var art = File(await _fullPath(music.fileArt));
       if (art.existsSync()) {
         music.cacheThumbnail = art;
@@ -103,7 +96,10 @@ class Utilities {
   }
 
   static Future<List<Music>> fetchPlaylistFromDb(
-      Database database, String table) async {
+      Database? database, String table) async {
+    if (database == null) {
+      return [];
+    }
     var value = await database.query(table);
     if (value.isEmpty) {
       return [];
@@ -140,7 +136,7 @@ class Utilities {
       }
       var music = Music(
         id: video.id.value,
-        title: _trim(video.title),
+        title: trimTitle(video.title),
         artist: video.author,
         link: manifest.audioOnly.withHighestBitrate().url,
         duration: video.duration ?? Duration.zero,
@@ -161,7 +157,10 @@ class Utilities {
   }
 
   static Future<void> refreshPlaylist(
-      Database database, String table, List<Music> list) async {
+      Database? database, String table, List<Music> list) async {
+    if (database == null) {
+      return;
+    }
     await database.delete(table);
     for (var e in list) {
       await database.insert(
@@ -204,7 +203,7 @@ class Utilities {
       }
       var music = Music(
         id: video.id.value,
-        title: _trim(video.title),
+        title: trimTitle(video.title),
         artist: video.author,
         link: manifest.audioOnly.withHighestBitrate().url,
         duration: video.duration ?? Duration.zero,
@@ -280,19 +279,22 @@ class Utilities {
     return '$path/cache/$fileId.temp';
   }
 
-  static String _trim(String str) {
+  static String trimTitle(String str) {
     var start = str.indexOf(RegExp(r'[\[\{\(]'));
     var end = str.indexOf(RegExp(r'[\)\}\]]'));
     if (start == -1 || end == -1) {
-      return str.trim();
+      return str
+          .replaceAll(RegExp(r'[VvLl][IiYy][DdRr][EeIi][OoCc]'), 'Audio')
+          // .replaceAll(RegExp(r'[\\|/]'), '')
+          .trim();
     }
     var token = str.substring(start, end + 1);
     var match = token.indexOf(RegExp(r'[VvLlAa][IiYyUu][DdRr][EeIi][OoCc]'));
     if (match == -1) {
-      return '${str.substring(0, end + 1)}${_trim(str.substring(end + 1))}'
+      return '${str.substring(0, end + 1)}${trimTitle(str.substring(end + 1))}'
           .trim();
     } else {
-      return '${str.substring(0, start)}${_trim(str.substring(end + 1))}'
+      return '${str.substring(0, start)}${trimTitle(str.substring(end + 1))}'
           .trim();
     }
   }
@@ -304,8 +306,7 @@ extension UniqueHashCode on List<Music> {
 
 extension KeyValue on Database {
   void createKeyValueTable() {
-    execute(
-        '''
+    execute('''
       CREATE TABLE IF NOT EXISTS keyValue (
         key TEXT PRIMARY KEY,
         value TEXT

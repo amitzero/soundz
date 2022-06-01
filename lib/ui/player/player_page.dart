@@ -127,7 +127,7 @@ class _PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
         },
         child: SafeArea(
           child: Scaffold(
-            bottomSheet: PlaylistPage(_playListAnimation),
+            bottomSheet: PlaylistView(_playListAnimation),
             body: AnimatedContainer(
               duration: const Duration(seconds: 1),
               color: musicData.backgroundColor,

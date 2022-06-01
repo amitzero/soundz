@@ -12,7 +12,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 
 class MusicData with ChangeNotifier {
   AudioPlayer player;
-  Database database;
+  Database? database;
   Music? _music;
   List<Music>? musics;
   String? playListName;
@@ -89,15 +89,18 @@ class MusicData with ChangeNotifier {
   }
 
   Future saveState() async {
-    await database.putKeyValue('index', '${player.currentIndex ?? ''}');
-    await database.getKeyValue('index');
-    await database.putKeyValue('playlist', playListName ?? '');
+    if (database == null) {
+      return;
+    }
+    await database!.putKeyValue('index', '${player.currentIndex ?? ''}');
+    await database!.getKeyValue('index');
+    await database!.putKeyValue('playlist', playListName ?? '');
   }
 
   Future loadPreviousState() async {
-    if (musics != null) return;
-    if (await database.getKeyValue('playlist') == 'Favorite') {
-      var index = await database.getKeyValue('index');
+    if (musics != null || database == null) return;
+    if (await database!.getKeyValue('playlist') == 'Favorite') {
+      var index = await database!.getKeyValue('index');
       if (index.isEmpty) return;
       int i = int.parse(index);
       await addPlayList(
@@ -142,9 +145,12 @@ class MusicData with ChangeNotifier {
 
   void setFavorite([Music? m]) {
     notifyListeners();
+    if (database == null) {
+      return;
+    }
     Music _m = m ?? _music!;
     if (_m.favorite) {
-      database.insert(
+      database!.insert(
         'favorite',
         {
           'data': json.encode(_m.toJson()),
@@ -155,7 +161,7 @@ class MusicData with ChangeNotifier {
       );
       Utilities.addPlaylistToCache([_m]);
     } else {
-      database.delete(
+      database!.delete(
         'favorite',
         where: 'title = ?',
         whereArgs: [_m.title],

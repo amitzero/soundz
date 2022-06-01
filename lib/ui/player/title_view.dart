@@ -101,9 +101,13 @@ class TitleView extends StatelessWidget {
           iconSize: 30,
           onPressed: Navigator.of(context).pop,
         ),
-        Text(
-          _titleText(musicData),
-          style: style.copyWith(fontSize: style.fontSize! + 5),
+        Flexible(
+          child: Text(
+            _titleText(musicData),
+            style: style.copyWith(fontSize: style.fontSize! + 5),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+          ),
         ),
         PopupMenuButton(
           onSelected: (value) async {
