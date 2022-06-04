@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     var homeData = context.watch<HomeData>();
     if (homeData.showDetails) {
-      var playlist = homeData.playlist!..loadMusics();
+      var playlist = homeData.playlist!..loadMusics()..loadArtists();
       return ChangeNotifierProvider<PlaylistItem>.value(
         value: playlist,
         child: const PlaylistPage(),
@@ -50,10 +50,10 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    // var homeData = context.read<HomeData>();
-    // if (homeData.artistList.isEmpty) {
-    _loadPlaylists();
-    // }
+    var homeData = context.read<HomeData>();
+    if (homeData.playlists.isEmpty) {
+      _loadPlaylists();
+    }
   }
 
   Future<void> _loadPlaylists() async {
@@ -145,7 +145,7 @@ class _HomeViewState extends State<HomeView> {
                                       child: Text(
                                         context
                                             .watch<PlaylistItem>()
-                                            .artists
+                                            .artistsInfo
                                             .map((e) => e.name)
                                             .join(', '),
                                       ),
@@ -158,17 +158,15 @@ class _HomeViewState extends State<HomeView> {
                           ],
                         ),
                       ),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         image: DecorationImage(
-                            fit: BoxFit.fitHeight,
-                            alignment: FractionalOffset.center,
-                            image:
-                                // homeData.playlists[index].image != null
-                                //     ? NetworkImage(homeData.playlists[index].image!)
-                                //     :
-                                AssetImage('assets/images/music_art.jpg')
-                            // as ImageProvider,
-                            ),
+                          fit: BoxFit.fitHeight,
+                          alignment: FractionalOffset.center,
+                          image: homeData.playlists[index].image != null
+                              ? NetworkImage(homeData.playlists[index].image!)
+                              : const AssetImage('assets/images/music_art.jpg')
+                                  as ImageProvider,
+                        ),
                       ),
                     ),
                   );

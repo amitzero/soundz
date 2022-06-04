@@ -55,11 +55,11 @@ class MusicView extends StatelessWidget {
           ),
           subtitle: music.progress.isInfinite
               ? Text(
-                  music.artist,
+                  music.artistName,
                   style: TextStyle(color: color),
                 )
               : Text(
-                  '${music.artist}   ${(music.progress * 100).toStringAsFixed(2)}%',
+                  '${music.artistName}   ${(music.progress * 100).toStringAsFixed(2)}%',
                   style: TextStyle(color: color),
                 ),
           trailing: ChangeNotifierProvider.value(

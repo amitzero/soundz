@@ -7,6 +7,7 @@ import 'package:soundz/ui/player/lyrics_view.dart';
 import 'package:soundz/ui/player/metadata_view.dart';
 import 'package:soundz/ui/player/progress_view.dart';
 import 'package:soundz/ui/player/title_view.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class PotraitView extends StatelessWidget {
   const PotraitView({
@@ -18,7 +19,6 @@ class PotraitView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var musicData = context.read<MusicData>();
     return Column(
       children: [
         TitleView(style: style),
@@ -30,10 +30,7 @@ class PotraitView extends StatelessWidget {
         MetadataView(style: style),
         const ProgressView(),
         const ControllerView(),
-        if (musicData.music?.caption != null)
-          LyricsBox(style: style, height: 200)
-        else
-          const SizedBox(height: 50),
+        LyricsBox(style: style, height: 200),
       ],
     );
   }

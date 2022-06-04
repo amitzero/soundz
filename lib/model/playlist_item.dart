@@ -7,13 +7,15 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 class PlaylistItem with ChangeNotifier {
   String id;
   String title;
-  List<String> artistsIds;
+  List<ArtistItemInfo> artistsInfo;
   int length;
+  String? image;
   PlaylistItem({
     required this.id,
     required this.title,
-    required this.artistsIds,
+    required this.artistsInfo,
     required this.length,
+    this.image,
   })  : artists = [],
         musics = [];
 
@@ -24,34 +26,37 @@ class PlaylistItem with ChangeNotifier {
   PlaylistItem.fromJson(Map<String, dynamic> map)
       : id = map['id'],
         title = map['title'],
-        artistsIds = List<String>.from(map['artists']),
+        artistsInfo = (map['artists'] as List)
+            .map((e) => ArtistItemInfo.fromJson(e))
+            .toList(),
         length = map['length'],
-        musics = [],
-        artists = [];
+        image = map['image'],
+        artists = [],
+        musics = [];
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
-        'artists': artistsIds,
+        'artists': artistsInfo.map((e) => e.toJson()).toList(),
         'length': length,
+        'image': image,
       };
 
   Map<String, dynamic> musicToJson() => {
         'musics': musics.map((e) => e.toJson()).toList(),
       };
 
-  bool get containsArtistDetails => artists.length == artistsIds.length;
-
   void loadArtists() {
+    artists.clear();
     var artistsRef = FirebaseFirestore.instance.collection('artists');
-    for (var artistId in artistsIds) {
-      artistsRef.doc(artistId).get().then((artist) {
+    for (var info in artistsInfo) {
+      artistsRef.doc(info.id).get().then((artist) {
         if (artist.exists) {
           artists.add(ArtistItem.fromJson(artist.data()!));
           notifyListeners();
         } else {
           var ytClient = YoutubeExplode();
-          ytClient.channels.get(artistId).then((channel) {
+          ytClient.channels.get(info.id).then((channel) {
             var artist = ArtistItem(
               id: channel.id.value,
               name: channel.title,
@@ -59,7 +64,7 @@ class PlaylistItem with ChangeNotifier {
               image: channel.logoUrl,
             );
             artists.add(artist);
-            artistsRef.doc(artistId).set(artist.toJson());
+            artistsRef.doc(info.id).set(artist.toJson());
             notifyListeners();
           });
         }
@@ -67,27 +72,41 @@ class PlaylistItem with ChangeNotifier {
     }
   }
 
-  void loadMusics() {
+  Future<void> loadMusics() async {
     loading = true;
     notifyListeners();
-    FirebaseFirestore.instance.collection('lists').doc(id).get().then((list) {
-      if (list.exists) {
-        musics = (list.data()!['musics'] as List).map((e) => Music.fromJson(e)).toList();
-        notifyListeners();
-      }
-    }).whenComplete(() {
-      loading = false;
+    var list =
+        await FirebaseFirestore.instance.collection('lists').doc(id).get();
+    if (list.exists) {
+      musics = (list.data()!['musics'] as List)
+          .map((e) => Music.fromJson(e))
+          .toList();
       notifyListeners();
-    });
+      await musics.loadLinks();
+    }
+    loading = false;
+    notifyListeners();
   }
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => toString().hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PlaylistItem &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
+      (other is PlaylistItem && hashCode == other.hashCode);
+
+  @override
+  String toString() => '$title($id, $artistsInfo, $length, $image)';
+}
+
+extension Features on List<ArtistItemInfo> {
+  bool containsId(String id) => any((e) => e.id == id);
+  ArtistItemInfo? tryGetById(String id) {
+    try {
+      return firstWhere((e) => e.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
 }

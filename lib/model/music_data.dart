@@ -172,7 +172,7 @@ class MusicData with ChangeNotifier {
 
   UriAudioSource _audioSource(Music m) {
     return AudioSource.uri(
-      m.cacheLink ?? m.link,
+      m.cacheLink ?? m.link!,
       tag: MediaItem(
         id: jsonEncode({
           'id': m.id,
@@ -181,7 +181,7 @@ class MusicData with ChangeNotifier {
           'thumbnail': m.thumbnail,
           'cacheThumbnail': m.cacheThumbnail?.path ?? 'null',
         }),
-        artist: m.artist,
+        artist: m.artistName,
         title: m.title,
         artUri: m.cacheThumbnail?.uri ?? Uri.parse(m.thumbnail),
       ),

@@ -126,18 +126,19 @@ class Utilities {
     var playlist = await yt.playlists.get(playListID);
     await for (var video in yt.playlists.getVideos(playlist.id)) {
       var manifest = await yt.videos.streamsClient.getManifest(video.id);
-      var info = await yt.videos.closedCaptions.getManifest(video.id);
-      var captions = info.getByLanguage('en');
+      var captions =
+          (await yt.videos.closedCaptions.getManifest(video.id)).getByLanguage(
+        'en',
+      );
       ClosedCaptionTrack? caption;
       if (captions.isNotEmpty) {
-        caption = await yt.videos.closedCaptions.get(
-          captions.first,
-        );
+        caption = await yt.videos.closedCaptions.get(captions.first);
       }
       var music = Music(
         id: video.id.value,
         title: trimTitle(video.title),
-        artist: video.author,
+        artistName: video.author,
+        artistId: video.channelId.value,
         link: manifest.audioOnly.withHighestBitrate().url,
         duration: video.duration ?? Duration.zero,
         thumbnail: video.thumbnails.highResUrl,
@@ -204,7 +205,8 @@ class Utilities {
       var music = Music(
         id: video.id.value,
         title: trimTitle(video.title),
-        artist: video.author,
+        artistName: video.author,
+        artistId: video.channelId.value,
         link: manifest.audioOnly.withHighestBitrate().url,
         duration: video.duration ?? Duration.zero,
         thumbnail: video.thumbnails.highResUrl,
@@ -300,13 +302,10 @@ class Utilities {
   }
 }
 
-extension UniqueHashCode on List<Music> {
-  int get identityCode => Object.hashAll(this);
-}
-
 extension KeyValue on Database {
   void createKeyValueTable() {
-    execute('''
+    execute(
+        '''
       CREATE TABLE IF NOT EXISTS keyValue (
         key TEXT PRIMARY KEY,
         value TEXT

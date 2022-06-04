@@ -36,7 +36,10 @@ class LyricsBox extends StatelessWidget {
         tag: 'lyrics_hero',
         child: ChangeNotifierProvider.value(
           value: musicData,
-          child: LyricsView(height: height, style: style),
+          child: LyricsView(
+            height: height,
+            style: style,
+          ),
         ),
       ),
     );
@@ -59,19 +62,37 @@ class LyricsView extends StatefulWidget {
 
 class _LyricsViewState extends State<LyricsView> {
   final _controller = FixedExtentScrollController();
-  StreamSubscription? _streamSubscription;
-  StreamSubscription? _streamSubscription2;
+  StreamSubscription? _positionStreamSubscription;
+  StreamSubscription? _indexStreamSubscription;
   bool _firstTime = true;
+
+  int index = 0;
+  ClosedCaptionTrack? caption;
+  bool loading = false;
+  bool scrolling = false;
 
   @override
   void initState() {
     super.initState();
     var musicData = context.read<MusicData>();
-    _streamSubscription2 =
+    setState(() {
+      caption = musicData.music!.captionTrack;
+      if (caption != null) {
+        _positionEvent(musicData.player.position);
+      }
+    });
+    _indexStreamSubscription =
         musicData.player.currentIndexStream.listen((event) async {
       if (event != null) {
-        await _streamSubscription?.cancel();
-        caption = musicData.music!.caption;
+        await _positionStreamSubscription?.cancel();
+        setState(() {
+          loading = true;
+          caption = musicData.music!.captionTrack;
+        });
+        caption ??= await musicData.music!.caption;
+        setState(() {
+          loading = false;
+        });
         if (caption == null) {
           if (widget.height == null) {
             Navigator.pop(context);
@@ -79,15 +100,11 @@ class _LyricsViewState extends State<LyricsView> {
           return;
         }
         index = 0;
-        _streamSubscription =
+        _positionStreamSubscription =
             musicData.player.positionStream.listen(_positionEvent);
       }
     });
   }
-
-  int index = 0;
-  ClosedCaptionTrack? caption;
-  bool scrolling = false;
 
   void _positionEvent(Duration duration) {
     var c = caption!.getByTime(duration);
@@ -139,8 +156,8 @@ class _LyricsViewState extends State<LyricsView> {
   @override
   void dispose() {
     _controller.dispose();
-    _streamSubscription?.cancel();
-    _streamSubscription2?.cancel();
+    _positionStreamSubscription?.cancel();
+    _indexStreamSubscription?.cancel();
     super.dispose();
   }
 
@@ -155,29 +172,39 @@ class _LyricsViewState extends State<LyricsView> {
         child: SizedBox(
           height: widget.height,
           width: double.infinity,
-          child: NotificationListener<ScrollNotification>(
-            onNotification: _onNotification,
-            child: ListWheelScrollView(
-              physics: const FixedExtentScrollPhysics(),
-              controller: _controller,
-              itemExtent: 125,
-              overAndUnderCenterOpacity: 0.7,
-              perspective: 0.0001,
-              // onSelectedItemChanged: _newIndex,
-              children: [
-                if (musicData.music!.caption != null)
-                  for (var c in musicData.music!.caption!.captions)
-                    Center(
-                      child: Text(
-                        c.text,
-                        textScaleFactor: 1.5,
-                        overflow: TextOverflow.fade,
-                        style: widget.style,
-                      ),
-                    )
-              ],
-            ),
-          ),
+          child: caption == null
+              ? Center(
+                  child: loading
+                      ? SizedBox(
+                          height: 30,
+                          width: 30,
+                          child: CircularProgressIndicator(
+                            color: musicData.forgroundColor,
+                          ),
+                        )
+                      : Text('No lyrics found', style: widget.style),
+                )
+              : NotificationListener<ScrollNotification>(
+                  onNotification: _onNotification,
+                  child: ListWheelScrollView(
+                    physics: const FixedExtentScrollPhysics(),
+                    controller: _controller,
+                    itemExtent: 125,
+                    overAndUnderCenterOpacity: 0.7,
+                    perspective: 0.0001,
+                    children: [
+                      for (var c in caption?.captions ?? [])
+                        Center(
+                          child: Text(
+                            c.text,
+                            textScaleFactor: 1.5,
+                            overflow: TextOverflow.fade,
+                            style: widget.style,
+                          ),
+                        )
+                    ],
+                  ),
+                ),
         ),
       ),
     );

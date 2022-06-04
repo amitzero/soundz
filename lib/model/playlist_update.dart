@@ -8,24 +8,26 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class PlaylistUpdate with ChangeNotifier {
   PlaylistItem current =
-      PlaylistItem(id: '', title: '', artistsIds: [], length: 0);
+      PlaylistItem(id: '', title: '', artistsInfo: [], length: 0);
   String state = 'idle';
   late YoutubeExplode _ytClient;
 
   bool get isIdle => state == 'idle';
 
-  Future<void> _updateChannel(ChannelId channelId) async {
-    if (current.artistsIds.contains(channelId.value)) {
-      return;
+  Future<ArtistItemInfo> _updateChannel(ChannelId channelId) async {
+    ArtistItemInfo? info = current.artistsInfo.tryGetById(channelId.value);
+    if (info != null) {
+      return info;
     }
-    var artist = await FirebaseFirestore.instance
+    var artistDoc = await FirebaseFirestore.instance
         .collection('artists')
         .doc(channelId.value)
         .get();
-    if (artist.exists) {
-      current.artistsIds.add(channelId.value);
-      current.artists.add(ArtistItem.fromJson(artist.data()!));
+    if (artistDoc.exists) {
+      info = ArtistItemInfo.fromJson(artistDoc.data()!);
+      current.artistsInfo.add(info);
       notifyListeners();
+      return info;
     } else {
       final channel = await _ytClient.channels.get(channelId);
       var artist = ArtistItem(
@@ -34,13 +36,13 @@ class PlaylistUpdate with ChangeNotifier {
         url: channel.url,
         image: channel.logoUrl,
       );
-      current.artistsIds.add(artist.id);
-      current.artists.add(artist);
+      current.artistsInfo.add(artist.info);
       notifyListeners();
       FirebaseFirestore.instance
           .collection('artists')
           .doc(channelId.value)
           .set(artist.toJson());
+      return artist.info;
     }
   }
 
@@ -48,44 +50,37 @@ class PlaylistUpdate with ChangeNotifier {
     if (state != 'idle') {
       return;
     }
-    state = 'loading';
+    state = 'loading 0/0';
     notifyListeners();
     current.id = playlistId;
     _ytClient = YoutubeExplode();
     current.musics.clear();
     current.title = '';
-    current.artists.clear();
+    current.artistsInfo.clear();
     notifyListeners();
     final playlist = await _ytClient.playlists.get(current.id);
+    updateDevItem(playlistId, playlist.title);
     current.title = playlist.title;
     current.length = playlist.videoCount ?? -1;
+    current.image = null;
     notifyListeners();
     await for (var video in _ytClient.playlists.getVideos(playlist.id)) {
-      _updateChannel(video.channelId);
-      var manifest = await _ytClient.videos.streamsClient.getManifest(video.id);
-      var info = await _ytClient.videos.closedCaptions.getManifest(video.id);
-      var captions = info.getByLanguage('en');
-      ClosedCaptionTrack? caption;
-      if (captions.isNotEmpty) {
-        caption = await _ytClient.videos.closedCaptions.get(
-          captions.first,
-        );
-      }
+      var artist = await _updateChannel(video.channelId);
+      current.image ??= video.thumbnails.highResUrl;
       var music = Music(
         id: video.id.value,
         title: Utilities.trimTitle(video.title),
-        artist: video.author,
-        link: manifest.audioOnly.withHighestBitrate().url,
+        artistName: artist.name,
+        artistId: artist.id,
         duration: video.duration ?? Duration.zero,
         thumbnail: video.thumbnails.highResUrl,
-        caption: caption,
       );
       current.musics.add(music);
       state = 'loading ${current.musics.length}/${current.length}';
       notifyListeners();
     }
     _ytClient.close();
-    state = 'updating firestore';
+    state = 'updating';
     notifyListeners();
     await FirebaseFirestore.instance
         .collection('playlists')
@@ -97,5 +92,29 @@ class PlaylistUpdate with ChangeNotifier {
         .set(current.musicToJson());
     state = 'idle';
     notifyListeners();
+  }
+
+  void updateDevItem(String id, String name) {
+    FirebaseFirestore.instance.collection('dev').doc('playlists').update(
+      {
+        'items': FieldValue.arrayRemove(
+          [
+            {'id': id},
+          ],
+        ),
+      },
+    );
+    FirebaseFirestore.instance.collection('dev').doc('playlists').update(
+      {
+        'items': FieldValue.arrayUnion(
+          [
+            {
+              'id': id,
+              'title': name,
+            },
+          ],
+        ),
+      },
+    );
   }
 }

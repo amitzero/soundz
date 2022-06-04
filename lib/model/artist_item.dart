@@ -1,3 +1,22 @@
+class ArtistItemInfo {
+  String id;
+  String name;
+  ArtistItemInfo({
+    required this.id,
+    required this.name,
+  });
+  ArtistItemInfo.fromJson(Map<String, dynamic> map)
+      : id = map['id'],
+        name = map['name'];
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+      };
+
+  @override
+  String toString() => '$name($id)';
+}
+
 class ArtistItem {
   String id;
   String name;
@@ -22,11 +41,19 @@ class ArtistItem {
         'image': image,
       };
 
-  @override
-  int get hashCode => id.hashCode;
+  ArtistItemInfo get info => ArtistItemInfo(
+        id: id,
+        name: name,
+      );
 
   @override
-  bool operator ==(Object other) {
-    return other is ArtistItem && other.hashCode == hashCode;
-  }
+  int get hashCode => toString().hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ArtistItem && hashCode == other.hashCode);
+
+  @override
+  String toString() => '$name($id, $url, $image)';
 }
