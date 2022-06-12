@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
+import 'package:soundz/model/ad_data.dart';
 import 'package:soundz/model/playlist_update.dart';
 
 class SettingPage extends StatelessWidget {
@@ -80,6 +82,24 @@ class _PlaylistUpdateListPageState extends State<PlaylistUpdateListPage> {
   List<DevItem> _playlistUpdates = [];
   StreamSubscription? _subscription;
   var updater = PlaylistUpdate();
+
+  BannerAd? banner;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    var adData = context.read<AdData>();
+    adData.status.then((value) {
+      setState(() {
+        banner = BannerAd(
+          adUnitId: adData.bannerAdUnitId,
+          size: AdSize.banner,
+          request: const AdRequest(),
+          listener: adData.listener,
+        )..load();
+      });
+    });
+  }
 
   @override
   void initState() {
@@ -175,6 +195,10 @@ class _PlaylistUpdateListPageState extends State<PlaylistUpdateListPage> {
                     ),
                   ),
                 ),
+              SizedBox(
+                height: 50,
+                child: banner != null ? AdWidget(ad: banner!) : Container(),
+              ),
             ],
           ),
         ),

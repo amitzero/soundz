@@ -26,7 +26,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     var homeData = context.watch<HomeData>();
     if (homeData.showDetails) {
-      var playlist = homeData.playlist!..loadMusics()..loadArtists();
+      var playlist = homeData.playlist!
+        ..loadMusics()
+        ..loadArtists();
       return ChangeNotifierProvider<PlaylistItem>.value(
         value: playlist,
         child: const PlaylistPage(),
@@ -65,7 +67,6 @@ class _HomeViewState extends State<HomeView> {
     });
     _listener = FirebaseFirestore.instance
         .collection('playlists')
-        // .where('artists', arrayContains: 'a')
         .snapshots()
         .listen((event) {
       var newList = event.docs
@@ -160,7 +161,7 @@ class _HomeViewState extends State<HomeView> {
                       ),
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          fit: BoxFit.fitHeight,
+                          fit: BoxFit.cover,
                           alignment: FractionalOffset.center,
                           image: homeData.playlists[index].image != null
                               ? NetworkImage(homeData.playlists[index].image!)

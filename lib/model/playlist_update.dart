@@ -14,8 +14,8 @@ class PlaylistUpdate with ChangeNotifier {
 
   bool get isIdle => state == 'idle';
 
-  Future<ArtistItemInfo> _updateChannel(ChannelId channelId) async {
-    ArtistItemInfo? info = current.artistsInfo.tryGetById(channelId.value);
+  Future<ArtistItem> _updateChannel(ChannelId channelId) async {
+    ArtistItem? info = current.artistsInfo.tryGetById(channelId.value);
     if (info != null) {
       return info;
     }
@@ -24,13 +24,13 @@ class PlaylistUpdate with ChangeNotifier {
         .doc(channelId.value)
         .get();
     if (artistDoc.exists) {
-      info = ArtistItemInfo.fromJson(artistDoc.data()!);
+      info = ArtistItem.fromJson(artistDoc.data()!);
       current.artistsInfo.add(info);
       notifyListeners();
       return info;
     } else {
       final channel = await _ytClient.channels.get(channelId);
-      var artist = ArtistItem(
+      var artist = ArtistItemInfo(
         id: channelId.value,
         name: channel.title,
         url: channel.url,
@@ -70,8 +70,7 @@ class PlaylistUpdate with ChangeNotifier {
       var music = Music(
         id: video.id.value,
         title: Utilities.trimTitle(video.title),
-        artistName: artist.name,
-        artistId: artist.id,
+        artist: ArtistItem(id: artist.id, name: artist.name),
         duration: video.duration ?? Duration.zero,
         thumbnail: video.thumbnails.highResUrl,
       );

@@ -1,13 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:soundz/model/artist_item.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class Music with ChangeNotifier {
   int? serialNumber;
   String id;
   String title;
-  String artistName;
-  String? artistId;
+  ArtistItem artist;
   Uri? link;
   Duration duration;
   String thumbnail;
@@ -19,8 +20,7 @@ class Music with ChangeNotifier {
   Music({
     required this.id,
     required this.title,
-    required this.artistName,
-    this.artistId,
+    required this.artist,
     this.link,
     required this.duration,
     required this.thumbnail,
@@ -69,7 +69,7 @@ class Music with ChangeNotifier {
     return {
       'id': id,
       'title': title,
-      'artist': {'name': artistName, 'id': artistId},
+      'artist': artist.toJson(),
       'link': link.toString(),
       'duration': duration.inMilliseconds,
       'thumbnail': thumbnail,
@@ -81,8 +81,7 @@ class Music with ChangeNotifier {
   Music.fromJson(Map<String, dynamic> map)
       : id = map['id'],
         title = map['title'],
-        artistName = map['artist']['name'],
-        artistId = map['artist']['id'],
+        artist = ArtistItem.fromJson(map['artist']),
         link = Uri.tryParse(map['link']),
         duration = Duration(milliseconds: map['duration']),
         thumbnail = map['thumbnail'],
@@ -93,19 +92,20 @@ class Music with ChangeNotifier {
 
   @override
   String toString() {
-    return '"$title"';
+    return '$title (${artist.name})';
   }
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => jsonEncode(toJson()).hashCode;
 
   @override
-  bool operator ==(Object other) => other is Music && id == other.id;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Music && hashCode == other.hashCode;
 
   static final empty = Music(
     id: '',
     title: '',
-    artistName: '',
+    artist: ArtistItem(id: '', name: ''),
     link: Uri.base,
     duration: Duration.zero,
     thumbnail: '',

@@ -74,7 +74,7 @@ class PlayerView extends StatelessWidget {
                         child: SizedBox(
                           width: 100,
                           child: Text(
-                            musicData.music!.artistName,
+                            musicData.music!.artist.name,
                             style:
                                 style.copyWith(fontSize: style.fontSize! - 2),
                             overflow: TextOverflow.ellipsis,

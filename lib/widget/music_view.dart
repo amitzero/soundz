@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:soundz/model/music.dart';
 import 'package:soundz/model/music_data.dart';
+import 'package:soundz/widget/playing_effect.dart';
 
 class MusicView extends StatelessWidget {
   const MusicView(
@@ -30,6 +31,7 @@ class MusicView extends StatelessWidget {
           leading: Container(
             width: 50,
             height: 50,
+            alignment: Alignment.bottomCenter,
             decoration: BoxDecoration(
               image: DecorationImage(
                 fit: BoxFit.fitHeight,
@@ -40,11 +42,15 @@ class MusicView extends StatelessWidget {
               ),
             ),
             child: playing
-                ? Icon(
-                    Icons.play_arrow,
-                    color: color ?? Colors.black,
-                    size: 50,
-                  )
+                ? StreamBuilder<bool>(
+                    stream: context.read<MusicData>().player.playingStream,
+                    builder: (context, snapshot) {
+                      return PlayingEffect(
+                        size: const Size(50, 30),
+                        color: color,
+                        animate: snapshot.data ?? false,
+                      );
+                    })
                 : null,
           ),
           title: Text(
@@ -55,11 +61,12 @@ class MusicView extends StatelessWidget {
           ),
           subtitle: music.progress.isInfinite
               ? Text(
-                  music.artistName,
+                  music.artist.name,
                   style: TextStyle(color: color),
                 )
               : Text(
-                  '${music.artistName}   ${(music.progress * 100).toStringAsFixed(2)}%',
+                  '${music.artist.name}   '
+                  '${(music.progress * 100).toStringAsFixed(2)}%',
                   style: TextStyle(color: color),
                 ),
           trailing: ChangeNotifierProvider.value(

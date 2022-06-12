@@ -25,7 +25,7 @@ class MetadataView extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        musicData.music!.artistName,
+        musicData.music!.artist.name,
         style: style,
       ),
       trailing: IconButton(

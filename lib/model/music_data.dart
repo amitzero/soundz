@@ -19,6 +19,7 @@ class MusicData with ChangeNotifier {
   String? playListAuthor;
   Color forgroundColor = Colors.white;
   Color backgroundColor = Colors.blue.shade900;
+  bool _showCaption = false;
 
   MusicData(this.player, this.database) {
     player.currentIndexStream.listen((event) {
@@ -36,13 +37,27 @@ class MusicData with ChangeNotifier {
         if (_music?.title == musics?[event].title) {
           saveState();
         }
+        _showCaption = false;
         _fetchColor();
         notifyListeners();
+      }
+    });
+
+    player.processingStateStream.listen((event) async {
+      if (event == ProcessingState.completed) {
+        await addToQueue(musics!.first, play: true);
+        await player.pause();
       }
     });
   }
 
   int? get index => player.currentIndex;
+
+  bool get showCaption => _showCaption;
+  set showCaption(bool value) {
+    _showCaption = value;
+    notifyListeners();
+  }
 
   Music? get music => _music;
 
@@ -143,13 +158,14 @@ class MusicData with ChangeNotifier {
     );
   }
 
-  void setFavorite([Music? m]) {
+  void setFavorite([Music? m]) async {
     notifyListeners();
     if (database == null) {
       return;
     }
     Music _m = m ?? _music!;
     if (_m.favorite) {
+      await _m.caption;
       database!.insert(
         'favorite',
         {
@@ -181,7 +197,7 @@ class MusicData with ChangeNotifier {
           'thumbnail': m.thumbnail,
           'cacheThumbnail': m.cacheThumbnail?.path ?? 'null',
         }),
-        artist: m.artistName,
+        artist: m.artist.name,
         title: m.title,
         artUri: m.cacheThumbnail?.uri ?? Uri.parse(m.thumbnail),
       ),

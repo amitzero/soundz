@@ -172,39 +172,52 @@ class _LyricsViewState extends State<LyricsView> {
         child: SizedBox(
           height: widget.height,
           width: double.infinity,
-          child: caption == null
-              ? Center(
-                  child: loading
-                      ? SizedBox(
-                          height: 30,
-                          width: 30,
-                          child: CircularProgressIndicator(
-                            color: musicData.forgroundColor,
-                          ),
-                        )
-                      : Text('No lyrics found', style: widget.style),
-                )
-              : NotificationListener<ScrollNotification>(
-                  onNotification: _onNotification,
-                  child: ListWheelScrollView(
-                    physics: const FixedExtentScrollPhysics(),
-                    controller: _controller,
-                    itemExtent: 125,
-                    overAndUnderCenterOpacity: 0.7,
-                    perspective: 0.0001,
-                    children: [
-                      for (var c in caption?.captions ?? [])
-                        Center(
-                          child: Text(
-                            c.text,
-                            textScaleFactor: 1.5,
-                            overflow: TextOverflow.fade,
-                            style: widget.style,
-                          ),
-                        )
-                    ],
+          child: !musicData.showCaption
+              ? Container(
+                  alignment: Alignment.topRight,
+                  child: ElevatedButton(
+                    onPressed: () => musicData.showCaption = true,
+                    child: const Text('Load lyrics'),
+                    style: ElevatedButton.styleFrom(
+                      primary: musicData.backgroundColor,
+                      shadowColor: musicData.forgroundColor,
+                      elevation: 1,
+                    ),
                   ),
-                ),
+                )
+              : caption == null
+                  ? Center(
+                      child: loading
+                          ? SizedBox(
+                              height: 30,
+                              width: 30,
+                              child: CircularProgressIndicator(
+                                color: musicData.forgroundColor,
+                              ),
+                            )
+                          : Text('No lyrics found', style: widget.style),
+                    )
+                  : NotificationListener<ScrollNotification>(
+                      onNotification: _onNotification,
+                      child: ListWheelScrollView(
+                        physics: const FixedExtentScrollPhysics(),
+                        controller: _controller,
+                        itemExtent: 125,
+                        overAndUnderCenterOpacity: 0.7,
+                        perspective: 0.0001,
+                        children: [
+                          for (var c in caption?.captions ?? [])
+                            Center(
+                              child: Text(
+                                c.text,
+                                textScaleFactor: 1.5,
+                                overflow: TextOverflow.fade,
+                                style: widget.style,
+                              ),
+                            )
+                        ],
+                      ),
+                    ),
         ),
       ),
     );

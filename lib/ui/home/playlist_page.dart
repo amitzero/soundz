@@ -5,6 +5,7 @@ import 'package:soundz/model/home_data.dart';
 import 'package:soundz/model/music_data.dart';
 import 'package:soundz/model/playlist_item.dart';
 import 'package:soundz/model/music.dart';
+import 'package:soundz/ui/home/artist_page.dart';
 import 'package:soundz/widget/music_view.dart';
 
 class PlaylistPage extends StatefulWidget {
@@ -50,6 +51,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (playlistData.artists.isEmpty)
                               for (var artist in playlistData.artistsInfo)
@@ -71,43 +73,66 @@ class _PlaylistPageState extends State<PlaylistPage> {
                                           ),
                                         ),
                                         const SizedBox(height: 20),
-                                        Text(
-                                          artist.name,
-                                          style: const TextStyle(fontSize: 25),
+                                        SizedBox(
+                                          width: 100,
+                                          child: Text(
+                                            artist.name,
+                                            style:
+                                                const TextStyle(fontSize: 20),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
                                 ),
                             for (var artist in playlistData.artists)
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      alignment: Alignment.bottomCenter,
-                                      height: 100,
-                                      width: 100,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        image: DecorationImage(
-                                          fit: BoxFit.fitHeight,
-                                          alignment: FractionalOffset.center,
-                                          image: artist.image != null
-                                              ? NetworkImage(artist.image!)
-                                              : const AssetImage(
-                                                      'assets/images/music_art.jpg')
-                                                  as ImageProvider,
-                                        ),
+                              GestureDetector(
+                                onTap: () {
+                                  var homeData = context.read<HomeData>();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ChangeNotifierProvider<
+                                              HomeData>.value(
+                                        value: homeData,
+                                        child: ArtistPage(artist: artist),
                                       ),
                                     ),
-                                    const SizedBox(height: 20),
-                                    Text(
-                                      artist.name,
-                                      style: const TextStyle(fontSize: 25),
-                                    ),
-                                  ],
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        alignment: Alignment.bottomCenter,
+                                        height: 100,
+                                        width: 100,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                            fit: BoxFit.fitHeight,
+                                            alignment: FractionalOffset.center,
+                                            image: artist.image != null
+                                                ? NetworkImage(artist.image!)
+                                                : const AssetImage(
+                                                    'assets/images/people.png',
+                                                  ) as ImageProvider,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      SizedBox(
+                                        width: 100,
+                                        child: Text(
+                                          artist.name,
+                                          style: const TextStyle(fontSize: 20),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                           ],

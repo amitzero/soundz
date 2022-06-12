@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
+import 'package:soundz/model/ad_data.dart';
 import 'package:soundz/model/home_data.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite/sqflite.dart';
@@ -43,10 +45,15 @@ Future<void> main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  var adData = AdData(MobileAds.instance.initialize());
+
   runApp(
-    MaterialApp(
-      home: MyApp(database),
-      debugShowCheckedModeBanner: false,
+    Provider<AdData>.value(
+      value: adData,
+      child: MaterialApp(
+        home: MyApp(database),
+        debugShowCheckedModeBanner: false,
+      ),
     ),
   );
 }

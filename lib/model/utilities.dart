@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:soundz/model/artist_item.dart';
 import 'package:soundz/model/music.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -137,8 +138,10 @@ class Utilities {
       var music = Music(
         id: video.id.value,
         title: trimTitle(video.title),
-        artistName: video.author,
-        artistId: video.channelId.value,
+        artist: ArtistItem(
+          id: video.channelId.value,
+          name: video.author,
+        ),
         link: manifest.audioOnly.withHighestBitrate().url,
         duration: video.duration ?? Duration.zero,
         thumbnail: video.thumbnails.highResUrl,
@@ -205,8 +208,10 @@ class Utilities {
       var music = Music(
         id: video.id.value,
         title: trimTitle(video.title),
-        artistName: video.author,
-        artistId: video.channelId.value,
+        artist: ArtistItem(
+          id: video.channelId.value,
+          name: video.author,
+        ),
         link: manifest.audioOnly.withHighestBitrate().url,
         duration: video.duration ?? Duration.zero,
         thumbnail: video.thumbnails.highResUrl,

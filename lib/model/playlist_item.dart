@@ -7,7 +7,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 class PlaylistItem with ChangeNotifier {
   String id;
   String title;
-  List<ArtistItemInfo> artistsInfo;
+  List<ArtistItem> artistsInfo;
   int length;
   String? image;
   PlaylistItem({
@@ -19,7 +19,7 @@ class PlaylistItem with ChangeNotifier {
   })  : artists = [],
         musics = [];
 
-  List<ArtistItem> artists;
+  List<ArtistItemInfo> artists;
   List<Music> musics;
   bool loading = false;
 
@@ -27,7 +27,7 @@ class PlaylistItem with ChangeNotifier {
       : id = map['id'],
         title = map['title'],
         artistsInfo = (map['artists'] as List)
-            .map((e) => ArtistItemInfo.fromJson(e))
+            .map((e) => ArtistItem.fromJson(e))
             .toList(),
         length = map['length'],
         image = map['image'],
@@ -52,12 +52,12 @@ class PlaylistItem with ChangeNotifier {
     for (var info in artistsInfo) {
       artistsRef.doc(info.id).get().then((artist) {
         if (artist.exists) {
-          artists.add(ArtistItem.fromJson(artist.data()!));
+          artists.add(ArtistItemInfo.fromJson(artist.data()!));
           notifyListeners();
         } else {
           var ytClient = YoutubeExplode();
           ytClient.channels.get(info.id).then((channel) {
-            var artist = ArtistItem(
+            var artist = ArtistItemInfo(
               id: channel.id.value,
               name: channel.title,
               url: channel.url,
@@ -100,9 +100,9 @@ class PlaylistItem with ChangeNotifier {
   String toString() => '$title($id, $artistsInfo, $length, $image)';
 }
 
-extension Features on List<ArtistItemInfo> {
+extension Features on List<ArtistItem> {
   bool containsId(String id) => any((e) => e.id == id);
-  ArtistItemInfo? tryGetById(String id) {
+  ArtistItem? tryGetById(String id) {
     try {
       return firstWhere((e) => e.id == id);
     } catch (e) {
