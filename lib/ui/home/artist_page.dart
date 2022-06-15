@@ -18,15 +18,13 @@ class _ArtistPageState extends State<ArtistPage> {
     var list = context
         .watch<HomeData>()
         .playlists
-        .where((playlist) => playlist.artistsInfo.containsId(widget.artist.id))
+        .where((playlist) => playlist.artists.containsId(widget.artist.id))
         .toList();
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
           title: Text(widget.artist.name),
-          foregroundColor: Colors.blue,
-          backgroundColor: Colors.white,
         ),
         body: RefreshIndicator(
           onRefresh: () async {

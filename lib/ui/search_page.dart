@@ -74,8 +74,10 @@ class _SearchPageState extends State<SearchPage> {
             }
             return false;
           })) {
-            log('from favorite: ${m.title}',
-              name: runtimeType.toString(),);
+            log(
+              'from favorite: ${m.title}',
+              name: runtimeType.toString(),
+            );
             _musics.add(m);
           } else {
             _musics.add(event);
@@ -103,8 +105,6 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.blue,
-        backgroundColor: Colors.white,
         title: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Padding(

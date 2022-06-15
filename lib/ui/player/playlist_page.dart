@@ -67,7 +67,6 @@ class _PlaylistViewState extends State<PlaylistView> {
                   onTap: () async {
                     musicData.music = musicData.musics![i];
                   },
-                  playing: musicData.musics![i] == musicData.music,
                 ),
               ),
             ),

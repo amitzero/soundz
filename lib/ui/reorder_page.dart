@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:soundz/model/music.dart';
 import 'package:soundz/widget/music_view.dart';
@@ -35,8 +34,6 @@ class _ReorderPageState extends State<ReorderPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Oreder'),
-        foregroundColor: Colors.blue,
-        backgroundColor: Colors.white,
         actions: [
           TextButton(
             child: const Text('Done'),

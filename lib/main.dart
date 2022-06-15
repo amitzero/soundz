@@ -9,6 +9,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:soundz/model/ad_data.dart';
 import 'package:soundz/model/home_data.dart';
+import 'package:soundz/ui/test_page.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -47,10 +48,23 @@ Future<void> main() async {
 
   var adData = AdData(MobileAds.instance.initialize());
 
+  var themeColor = Colors.blue;
+
   runApp(
     Provider<AdData>.value(
       value: adData,
       child: MaterialApp(
+        theme: ThemeData(
+          colorSchemeSeed: themeColor,
+          brightness: Brightness.light,
+          useMaterial3: true,
+        ),
+        darkTheme: ThemeData(
+          colorSchemeSeed: themeColor,
+          brightness: Brightness.dark,
+          useMaterial3: true,
+        ),
+        themeMode: ThemeMode.system,
         home: MyApp(database),
         debugShowCheckedModeBanner: false,
       ),
@@ -90,14 +104,15 @@ class _MyAppState extends State<MyApp> {
 
   Widget bodyWidget(index) {
     switch (index) {
-      case 1:
-        return const FavoritePage();
-      case 2:
-        return const SearchPage();
       case 3:
         return const SettingPage();
+      case 2:
+        return const SearchPage();
+      case 1:
+        return const FavoritePage();
       default:
         return const HomePage();
+      // return const TestPage();
     }
   }
 
@@ -131,23 +146,25 @@ class _MyAppState extends State<MyApp> {
                   const PlayerView(),
                 BottomNavigationBar(
                   type: BottomNavigationBarType.shifting,
-                  selectedItemColor: Colors.blue,
-                  unselectedItemColor: Colors.grey,
+                  selectedItemColor: Theme.of(context).colorScheme.primary,
+                  unselectedItemColor: Theme.of(context).colorScheme.onSurface,
                   currentIndex: context.watch<RouteData>().index,
-                  items: const [
+                  items: [
                     BottomNavigationBarItem(
-                      icon: Icon(Icons.home),
+                      icon: const Icon(Icons.home),
                       label: 'Home',
+                      backgroundColor:
+                          Theme.of(context).colorScheme.surfaceVariant,
                     ),
-                    BottomNavigationBarItem(
+                    const BottomNavigationBarItem(
                       icon: Icon(Icons.favorite),
                       label: 'Library',
                     ),
-                    BottomNavigationBarItem(
+                    const BottomNavigationBarItem(
                       icon: Icon(Icons.search),
                       label: 'Search',
                     ),
-                    BottomNavigationBarItem(
+                    const BottomNavigationBarItem(
                       icon: Icon(Icons.settings),
                       label: 'Settings',
                     ),
@@ -155,6 +172,7 @@ class _MyAppState extends State<MyApp> {
                   onTap: (index) {
                     context.read<RouteData>().index = index;
                   },
+                  landscapeLayout: BottomNavigationBarLandscapeLayout.centered,
                 ),
               ],
             ),

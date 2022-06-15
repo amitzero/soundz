@@ -2,42 +2,43 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:soundz/model/artist_item.dart';
 import 'package:soundz/model/music.dart';
+import 'package:soundz/model/music_data.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class PlaylistItem with ChangeNotifier {
   String id;
   String title;
-  List<ArtistItem> artistsInfo;
+  List<ArtistItem> artists;
   int length;
   String? image;
   PlaylistItem({
     required this.id,
     required this.title,
-    required this.artistsInfo,
+    required this.artists,
     required this.length,
     this.image,
-  })  : artists = [],
-        musics = [];
+  }) : musics = [] {
+    artists.sort((a, b) => a.name.compareTo(b.name));
+  }
 
-  List<ArtistItemInfo> artists;
   List<Music> musics;
   bool loading = false;
 
   PlaylistItem.fromJson(Map<String, dynamic> map)
       : id = map['id'],
         title = map['title'],
-        artistsInfo = (map['artists'] as List)
+        artists = (map['artists'] as List)
             .map((e) => ArtistItem.fromJson(e))
-            .toList(),
+            .toList()
+          ..sort((a, b) => a.name.compareTo(b.name)),
         length = map['length'],
         image = map['image'],
-        artists = [],
         musics = [];
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
-        'artists': artistsInfo.map((e) => e.toJson()).toList(),
+        'artists': artists.map((e) => e.toJson()).toList(),
         'length': length,
         'image': image,
       };
@@ -46,40 +47,40 @@ class PlaylistItem with ChangeNotifier {
         'musics': musics.map((e) => e.toJson()).toList(),
       };
 
-  void loadArtists() {
-    artists.clear();
+  void loadArtists() async {
     var artistsRef = FirebaseFirestore.instance.collection('artists');
-    for (var info in artistsInfo) {
-      artistsRef.doc(info.id).get().then((artist) {
-        if (artist.exists) {
-          artists.add(ArtistItemInfo.fromJson(artist.data()!));
-          notifyListeners();
-        } else {
-          var ytClient = YoutubeExplode();
-          ytClient.channels.get(info.id).then((channel) {
-            var artist = ArtistItemInfo(
-              id: channel.id.value,
-              name: channel.title,
-              url: channel.url,
-              image: channel.logoUrl,
-            );
-            artists.add(artist);
-            artistsRef.doc(info.id).set(artist.toJson());
-            notifyListeners();
-          });
-        }
-      });
+    for (var info in artists) {
+      ArtistItemInfo artist;
+      var artistRef = await artistsRef.doc(info.id).get();
+      if (artistRef.exists) {
+        artist = ArtistItemInfo.fromJson(artistRef.data()!);
+      } else {
+        var ytClient = YoutubeExplode();
+        var channel = await ytClient.channels.get(info.id);
+        artist = ArtistItemInfo(
+          id: channel.id.value,
+          name: channel.title,
+          url: channel.url,
+          image: channel.logoUrl,
+        );
+        artistsRef.doc(info.id).set(artist.toJson());
+      }
+      artists = artists.map((e) => (e.id == artist.id ? artist : e)).toList();
+      notifyListeners();
     }
   }
 
-  Future<void> loadMusics() async {
+  Future<void> loadMusics(MusicData musicData) async {
     loading = true;
     notifyListeners();
+    // if (musicData.favoriteMusics.isEmpty) {
+    await musicData.fetchFavorite();
+    // }
     var list =
         await FirebaseFirestore.instance.collection('lists').doc(id).get();
     if (list.exists) {
       musics = (list.data()!['musics'] as List)
-          .map((e) => Music.fromJson(e))
+          .map((e) => musicData.favoriteMusics.getItem(Music.fromJson(e)))
           .toList();
       notifyListeners();
       await musics.loadLinks();
@@ -97,7 +98,7 @@ class PlaylistItem with ChangeNotifier {
       (other is PlaylistItem && hashCode == other.hashCode);
 
   @override
-  String toString() => '$title($id, $artistsInfo, $length, $image)';
+  String toString() => '$title($id, $artists, $length, $image)';
 }
 
 extension Features on List<ArtistItem> {

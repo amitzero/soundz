@@ -17,6 +17,7 @@ class Music with ChangeNotifier {
   Uri? cacheLink;
   File? cacheThumbnail;
   double _progress = double.infinity;
+  bool loading = false;
   Music({
     required this.id,
     required this.title,
@@ -114,10 +115,17 @@ class Music with ChangeNotifier {
   );
 
   Future<bool> loadLink() async {
+    if (cacheLink != null && cacheThumbnail != null) {
+      return true;
+    }
+    loading = true;
+    notifyListeners();
     var yt = YoutubeExplode();
     var manifest = await yt.videos.streamsClient.getManifest(id);
     link = manifest.audioOnly.withHighestBitrate().url;
     yt.close();
+    loading = false;
+    notifyListeners();
     return true;
   }
 }
@@ -125,4 +133,11 @@ class Music with ChangeNotifier {
 extension ExtraFeatures on List<Music> {
   int get identityCode => Object.hashAll(this);
   Future<List<bool>> loadLinks() async => Future.wait(map((e) => e.loadLink()));
+  Music getItem(Music m) {
+    try {
+      return firstWhere((e) => e.id == m.id);
+    } catch (e) {
+      return m;
+    }
+  }
 }

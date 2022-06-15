@@ -40,10 +40,6 @@ class ArtistItemInfo extends ArtistItem {
         'image': image,
       };
 
-  ArtistItem get info => ArtistItem(
-        id: id,
-        name: name,
-      );
 
   @override
   int get hashCode => toString().hashCode;

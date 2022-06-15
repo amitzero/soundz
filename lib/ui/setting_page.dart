@@ -38,9 +38,7 @@ class PlaylistUpdateView extends StatelessWidget {
                 Text(playlistUpdate.current.title),
                 const SizedBox(height: 10),
                 Text(
-                  playlistUpdate.current.artistsInfo
-                      .map((e) => e.name)
-                      .join(', '),
+                  playlistUpdate.current.artists.map((e) => e.name).join(', '),
                 ),
                 const SizedBox(height: 10),
                 for (var m in playlistUpdate.current.musics)

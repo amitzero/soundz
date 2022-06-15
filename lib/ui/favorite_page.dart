@@ -16,7 +16,6 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
-  List<Music> _musics = [];
   bool _isLoading = true;
   final _title = 'Favorite';
   final _author = 'Offline';
@@ -24,32 +23,26 @@ class _FavoritePageState extends State<FavoritePage> {
   @override
   void initState() {
     super.initState();
-    Utilities.fetchPlaylistFromDb(
-            context.read<MusicData>().database, 'favorite')
-        .then((value) {
-      if (value.isEmpty) {
-        setState(() => _isLoading = false);
-      } else {
-        setState(() {
-          _musics = value;
-          _isLoading = false;
-        });
-        Utilities.addPlaylistToCache(_musics).then((value) {
-          _musics = value;
-          if (mounted) setState(() {});
-        });
-      }
+    var musicData = context.read<MusicData>();
+    Utilities.fetchPlaylistFromDb(musicData.database, 'favorite').then((value) {
+      setState(() {
+        musicData.favoriteMusics = value;
+        _isLoading = false;
+      });
+      Utilities.addPlaylistToCache(musicData.favoriteMusics).then((value) {
+        musicData.favoriteMusics = value;
+        if (mounted) setState(() {});
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
     var musicData = context.watch<MusicData>();
+    var _musics = musicData.favoriteMusics;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Favorite'),
-        foregroundColor: Colors.blue,
-        backgroundColor: Colors.white,
         actions: [
           TextButton(
             child: const Text('Edit'),
@@ -96,7 +89,6 @@ class _FavoritePageState extends State<FavoritePage> {
                 onFavoriteChange: () => setState(() {
                   _musics.remove(_musics[i]);
                 }),
-                playing: _musics[i] == musicData.music,
               ),
             )
           : _isLoading

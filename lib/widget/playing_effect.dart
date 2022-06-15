@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 
 class PlayingEffect extends StatefulWidget {
@@ -45,7 +43,7 @@ class _PlayingEffectState extends State<PlayingEffect>
           size: widget.size,
           painter: MyPainter(
             animationValue: widget.animate ? _controller.value : 0.35,
-            color: widget.color ?? Theme.of(context).primaryColor,
+            color: widget.color ?? Theme.of(context).colorScheme.background,
           ),
         );
       },

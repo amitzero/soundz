@@ -8,14 +8,14 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class PlaylistUpdate with ChangeNotifier {
   PlaylistItem current =
-      PlaylistItem(id: '', title: '', artistsInfo: [], length: 0);
+      PlaylistItem(id: '', title: '', artists: [], length: 0);
   String state = 'idle';
   late YoutubeExplode _ytClient;
 
   bool get isIdle => state == 'idle';
 
   Future<ArtistItem> _updateChannel(ChannelId channelId) async {
-    ArtistItem? info = current.artistsInfo.tryGetById(channelId.value);
+    ArtistItem? info = current.artists.tryGetById(channelId.value);
     if (info != null) {
       return info;
     }
@@ -25,7 +25,7 @@ class PlaylistUpdate with ChangeNotifier {
         .get();
     if (artistDoc.exists) {
       info = ArtistItem.fromJson(artistDoc.data()!);
-      current.artistsInfo.add(info);
+      current.artists.add(info);
       notifyListeners();
       return info;
     } else {
@@ -36,13 +36,13 @@ class PlaylistUpdate with ChangeNotifier {
         url: channel.url,
         image: channel.logoUrl,
       );
-      current.artistsInfo.add(artist.info);
+      current.artists.add(artist);
       notifyListeners();
       FirebaseFirestore.instance
           .collection('artists')
           .doc(channelId.value)
           .set(artist.toJson());
-      return artist.info;
+      return artist;
     }
   }
 
@@ -56,7 +56,7 @@ class PlaylistUpdate with ChangeNotifier {
     _ytClient = YoutubeExplode();
     current.musics.clear();
     current.title = '';
-    current.artistsInfo.clear();
+    current.artists.clear();
     notifyListeners();
     final playlist = await _ytClient.playlists.get(current.id);
     updateDevItem(playlistId, playlist.title);

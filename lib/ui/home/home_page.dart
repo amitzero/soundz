@@ -26,11 +26,15 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     var homeData = context.watch<HomeData>();
     if (homeData.showDetails) {
+      var musicData = context.read<MusicData>();
       var playlist = homeData.playlist!
-        ..loadMusics()
+        ..loadMusics(musicData)
         ..loadArtists();
-      return ChangeNotifierProvider<PlaylistItem>.value(
-        value: playlist,
+      return MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: playlist),
+          ChangeNotifierProvider.value(value: musicData),
+        ],
         child: const PlaylistPage(),
       );
     } else {
@@ -100,8 +104,6 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Soundz'),
-        foregroundColor: Colors.blue,
-        backgroundColor: Colors.white,
       ),
       body: homeData.playlistLoading
           ? const Center(child: CircularProgressIndicator())
@@ -122,52 +124,92 @@ class _HomeViewState extends State<HomeView> {
                       context.read<HomeData>().playlist =
                           homeData.playlists[index];
                     },
-                    child: Container(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        width: double.infinity,
-                        color: Colors.white.withOpacity(0.5),
-                        padding: const EdgeInsets.all(4),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              homeData.playlists[index].title,
-                              style: const TextStyle(fontSize: 20),
-                              maxLines: 1,
+                    child: Card(
+                      child: Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.secondary,
+                              borderRadius: BorderRadius.circular(12),
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                alignment: FractionalOffset.bottomCenter,
+                                image: homeData.playlists[index].image != null
+                                    ? NetworkImage(
+                                        homeData.playlists[index].image!)
+                                    : const AssetImage(
+                                            'assets/images/music_art.jpg')
+                                        as ImageProvider,
+                              ),
                             ),
-                            Row(
-                              children: [
-                                ChangeNotifierProvider<PlaylistItem>.value(
-                                  value: homeData.playlists[index],
-                                  builder: (context, _) {
-                                    return Expanded(
-                                      child: Text(
-                                        context
-                                            .watch<PlaylistItem>()
-                                            .artistsInfo
-                                            .map((e) => e.name)
-                                            .join(', '),
-                                      ),
-                                    );
-                                  },
+                          ),
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 0.3,
                                 ),
-                                Text('${homeData.playlists[index].length}'),
-                              ],
+                                borderRadius: BorderRadius.circular(12),
+                                color:
+                                    Theme.of(context).colorScheme.onSecondary,
+                              ),
+                              padding: const EdgeInsets.all(4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    homeData.playlists[index].title,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                    ),
+                                    maxLines: 1,
+                                  ),
+                                  Row(
+                                    children: [
+                                      ChangeNotifierProvider<
+                                          PlaylistItem>.value(
+                                        value: homeData.playlists[index],
+                                        builder: (context, _) {
+                                          return Expanded(
+                                            child: Text(
+                                              context
+                                                  .watch<PlaylistItem>()
+                                                  .artists
+                                                  .map((e) => e.name)
+                                                  .join(', '),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .secondary,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      Text(
+                                        '${homeData.playlists[index].length}',
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
-                      ),
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          alignment: FractionalOffset.center,
-                          image: homeData.playlists[index].image != null
-                              ? NetworkImage(homeData.playlists[index].image!)
-                              : const AssetImage('assets/images/music_art.jpg')
-                                  as ImageProvider,
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   );

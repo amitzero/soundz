@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:soundz/model/music_data.dart';
 import 'package:soundz/ui/player/album_image_view.dart';
 import 'package:soundz/ui/player/controller_view.dart';
 import 'package:soundz/ui/player/lyrics_view.dart';
 import 'package:soundz/ui/player/metadata_view.dart';
 import 'package:soundz/ui/player/progress_view.dart';
 import 'package:soundz/ui/player/title_view.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class PotraitView extends StatelessWidget {
   const PotraitView({

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:soundz/model/artist_item.dart';
 import 'package:soundz/model/home_data.dart';
 import 'package:soundz/model/music_data.dart';
 import 'package:soundz/model/playlist_item.dart';
 import 'package:soundz/model/music.dart';
 import 'package:soundz/ui/home/artist_page.dart';
 import 'package:soundz/widget/music_view.dart';
+import 'package:soundz/widget/toast.dart';
 
 class PlaylistPage extends StatefulWidget {
   const PlaylistPage({super.key});
@@ -25,155 +27,166 @@ class _PlaylistPageState extends State<PlaylistPage> {
         return false;
       },
       child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.read<HomeData>().playlist = null,
-          ),
-          centerTitle: true,
-          title: Text(playlistData.title),
-          foregroundColor: Colors.blue,
-          backgroundColor: Colors.white,
-        ),
         body: RefreshIndicator(
           onRefresh: () async {
-            return (playlistData..loadArtists()).loadMusics();
+            var musicData = context.read<MusicData>();
+            await musicData.fetchFavorite(musicData.favoriteMusics.isEmpty);
+            return (playlistData..loadArtists())
+                .loadMusics(context.read<MusicData>());
           },
-          child: ListView.builder(
-            itemCount: playlistData.musics.length + 1,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return Container(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (playlistData.artists.isEmpty)
-                              for (var artist in playlistData.artistsInfo)
-                                Shimmer.fromColors(
-                                  baseColor: Colors.black87,
-                                  highlightColor: Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          alignment: Alignment.bottomCenter,
-                                          height: 100,
-                                          width: 100,
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 20),
-                                        SizedBox(
-                                          width: 100,
-                                          child: Text(
-                                            artist.name,
-                                            style:
-                                                const TextStyle(fontSize: 20),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                            for (var artist in playlistData.artists)
-                              GestureDetector(
-                                onTap: () {
-                                  var homeData = context.read<HomeData>();
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          ChangeNotifierProvider<
-                                              HomeData>.value(
-                                        value: homeData,
-                                        child: ArtistPage(artist: artist),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        alignment: Alignment.bottomCenter,
-                                        height: 100,
-                                        width: 100,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          image: DecorationImage(
-                                            fit: BoxFit.fitHeight,
-                                            alignment: FractionalOffset.center,
-                                            image: artist.image != null
-                                                ? NetworkImage(artist.image!)
-                                                : const AssetImage(
-                                                    'assets/images/people.png',
-                                                  ) as ImageProvider,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      SizedBox(
-                                        width: 100,
-                                        child: Text(
-                                          artist.name,
-                                          style: const TextStyle(fontSize: 20),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                floating: true,
+                snap: true,
+                stretch: true,
+                pinned: true,
+                expandedHeight: 250,
+                flexibleSpace: FlexibleSpaceBar(
+                  centerTitle: true,
+                  expandedTitleScale: 1.2,
+                  title: Text(
+                    playlistData.title,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.titleLarge!.color,
+                    ),
                   ),
-                );
-              }
-              var i = index - 1;
-              if (playlistData.loading) {
-                return Shimmer.fromColors(
-                  baseColor: Colors.black87,
-                  highlightColor: Colors.white,
-                  child: MusicView(playlistData.musics[i]),
-                );
-              }
-              return MusicView(
-                playlistData.musics[i],
-                onTap: playlistData.loading
-                    ? null
-                    : () async {
-                        var musicData = context.read<MusicData>();
-                        if (musicData.musics?.identityCode !=
-                            playlistData.musics.identityCode) {
-                          await musicData.addPlayList(
-                            musics: playlistData.musics,
-                            title: playlistData.title,
-                            author: playlistData.artistsInfo
-                                .map((e) => e.name)
-                                .join(', '),
-                          );
-                        }
-                        musicData.music = playlistData.musics[i];
-                      },
-              );
-            },
+                  background: Container(
+                    color: Theme.of(context).colorScheme.onInverseSurface,
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (var artist in playlistData.artists)
+                                ArtistItemView(artist: artist),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) {
+                    return MusicView(
+                      playlistData.musics[i],
+                      onTap: playlistData.loading
+                          ? () {
+                              Toast.show(
+                                context: context,
+                                text: 'Please wait while loading',
+                              );
+                            }
+                          : () async {
+                              var musicData = context.read<MusicData>();
+                              if (musicData.musics?.identityCode !=
+                                  playlistData.musics.identityCode) {
+                                await musicData.addPlayList(
+                                  musics: playlistData.musics,
+                                  title: playlistData.title,
+                                  author: playlistData.artists
+                                      .map((e) => e.name)
+                                      .join(', '),
+                                );
+                              }
+                              musicData.music = playlistData.musics[i];
+                            },
+                    );
+                  },
+                  childCount: playlistData.musics.length,
+                ),
+              )
+            ],
           ),
         ),
         bottomSheet: playlistData.loading ? const Text('Loading...') : null,
       ),
     );
+  }
+}
+
+class ArtistItemView extends StatelessWidget {
+  const ArtistItemView({
+    Key? key,
+    required this.artist,
+  }) : super(key: key);
+
+  final ArtistItem artist;
+
+  @override
+  Widget build(BuildContext context) {
+    bool isInfo = artist is ArtistItemInfo;
+    Widget widget = Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            alignment: Alignment.bottomCenter,
+            height: 100,
+            width: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isInfo ? null : Colors.blue,
+              image: artist is ArtistItemInfo
+                  ? DecorationImage(
+                      fit: BoxFit.fitHeight,
+                      alignment: FractionalOffset.center,
+                      image: (artist as ArtistItemInfo).image != null
+                          ? NetworkImage((artist as ArtistItemInfo).image!)
+                          : const AssetImage(
+                              'assets/images/people.png',
+                            ) as ImageProvider,
+                    )
+                  : null,
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: 100,
+            child: Center(
+              child: Text(
+                artist.name,
+                style: const TextStyle(
+                  fontSize: 16,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (artist is ArtistItemInfo) {
+      widget = GestureDetector(
+        onTap: () {
+          var homeData = context.read<HomeData>();
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ChangeNotifierProvider<HomeData>.value(
+                value: homeData,
+                child: ArtistPage(artist: artist as ArtistItemInfo),
+              ),
+            ),
+          );
+        },
+        child: widget,
+      );
+    } else {
+      widget = Shimmer.fromColors(
+        baseColor: Theme.of(context).disabledColor,
+        highlightColor: Theme.of(context).highlightColor,
+        child: widget,
+      );
+    }
+    return widget;
   }
 }

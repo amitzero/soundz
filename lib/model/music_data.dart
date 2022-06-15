@@ -20,6 +20,7 @@ class MusicData with ChangeNotifier {
   Color forgroundColor = Colors.white;
   Color backgroundColor = Colors.blue.shade900;
   bool _showCaption = false;
+  List<Music> favoriteMusics = [];
 
   MusicData(this.player, this.database) {
     player.currentIndexStream.listen((event) {
@@ -68,6 +69,16 @@ class MusicData with ChangeNotifier {
       notifyListeners();
     });
     notifyListeners();
+  }
+
+  Future<void> fetchFavorite([bool refresh = true]) async {
+    if (refresh) {
+      favoriteMusics = await Utilities.fetchPlaylistFromDb(
+        database,
+        'favorite',
+      );
+      notifyListeners();
+    }
   }
 
   Timer? _timer;
