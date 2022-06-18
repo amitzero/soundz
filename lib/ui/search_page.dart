@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:soundz/model/music.dart';
 import 'package:soundz/model/music_data.dart';
@@ -104,49 +105,58 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _textController,
-              onSubmitted: (query) {
-                searchPage(query.trim());
-              },
-              decoration: const InputDecoration(
-                hintText: 'Search...',
-                border: InputBorder.none,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _textController,
+                onSubmitted: (query) {
+                  searchPage(query.trim());
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Search',
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
           ),
-        ),
-      ),
-      body: _musics.isNotEmpty
-          ? ListView.builder(
-              itemCount: _musics.length,
-              itemBuilder: (context, i) => MusicView(
-                _musics[i],
-                onTap: () async {
-                  var musicData = context.read<MusicData>();
-                  if (musicData.musics?.identityCode != _musics.identityCode) {
-                    await musicData.addPlayList(
-                      musics: _musics,
-                      title: _title!,
-                      author: _author!,
-                    );
-                  }
-                  musicData.music = _musics[i];
-                },
-              ),
-            )
-          : _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
+          _musics.isNotEmpty
+              ? SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    childCount: 1,
+                    (context, index) => ListView.builder(
+                      itemCount: _musics.length,
+                      itemBuilder: (context, i) => MusicView(
+                        _musics[i],
+                        onTap: () async {
+                          var musicData = context.read<MusicData>();
+                          if (musicData.musics?.identityCode !=
+                              _musics.identityCode) {
+                            await musicData.addPlayList(
+                              musics: _musics,
+                              title: _title!,
+                              author: _author!,
+                            );
+                          }
+                          musicData.music = _musics[i];
+                        },
+                      ),
+                    ),
+                  ),
                 )
-              : const Center(
-                  child: Text('No search result'),
+              : SliverToBoxAdapter(
+                  child: Container(
+                    height: MediaQuery.of(context).size.height / 1.5,
+                    alignment: Alignment.center,
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('No search result'),
+                  ),
                 ),
+        ],
+      ),
       bottomNavigationBar: _isLoading ? const Text('Loading...') : null,
     );
   }

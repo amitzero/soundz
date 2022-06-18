@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:soundz/model/ad_data.dart';
 import 'package:soundz/model/home_data.dart';
 import 'package:soundz/ui/test_page.dart';
+import 'package:soundz/widget/custom_navigator.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -109,9 +110,9 @@ class _MyAppState extends State<MyApp> {
       case 2:
         return const SearchPage();
       case 1:
-        return const FavoritePage();
+        return const CustomNavigator(key: Key('favorite'), home: FavoritePage());
       default:
-        return const HomePage();
+        return const CustomNavigator(key: Key('home'), home: HomePage());
       // return const TestPage();
     }
   }

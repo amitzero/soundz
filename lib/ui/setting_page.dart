@@ -65,7 +65,7 @@ class PlaylistUpdateListPage extends StatefulWidget {
 class DevItem {
   String id;
   String? title;
-  DevItem(this.id, this.title);
+  // DevItem(this.id, this.title);
   DevItem.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         title = json['title'];

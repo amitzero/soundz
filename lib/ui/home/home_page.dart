@@ -7,6 +7,7 @@ import 'package:soundz/model/home_data.dart';
 import 'package:soundz/model/music_data.dart';
 import 'package:soundz/model/playlist_item.dart';
 import 'package:soundz/ui/home/playlist_page.dart';
+import 'package:soundz/widget/custom_navigator.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,46 +17,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<MusicData>().loadPreviousState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var homeData = context.watch<HomeData>();
-    if (homeData.showDetails) {
-      var musicData = context.read<MusicData>();
-      var playlist = homeData.playlist!
-        ..loadMusics(musicData)
-        ..loadArtists();
-      return MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: playlist),
-          ChangeNotifierProvider.value(value: musicData),
-        ],
-        child: const PlaylistPage(),
-      );
-    } else {
-      return const HomeView();
-    }
-  }
-}
-
-class HomeView extends StatefulWidget {
-  const HomeView({super.key});
-
-  @override
-  State<HomeView> createState() => _HomeViewState();
-}
-
-class _HomeViewState extends State<HomeView> {
   StreamSubscription? _listener;
   String? _errorMsg;
   @override
   void initState() {
     super.initState();
+    context.read<MusicData>().loadPreviousState();
     var homeData = context.read<HomeData>();
     if (homeData.playlists.isEmpty) {
       _loadPlaylists();
@@ -121,8 +88,14 @@ class _HomeViewState extends State<HomeView> {
                 itemBuilder: (BuildContext context, int index) {
                   return GestureDetector(
                     onTap: () {
-                      context.read<HomeData>().playlist =
-                          homeData.playlists[index];
+                      CustomNavigator.of(context).push(
+                        CustomNavigationPageRoute(
+                          child: PlaylistPage(
+                            playlist: homeData.playlists[index],
+                          ),
+                          duration: const Duration(milliseconds: 500),
+                        ),
+                      );
                     },
                     child: Card(
                       child: Stack(

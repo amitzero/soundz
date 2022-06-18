@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:soundz/model/music.dart';
+import 'package:soundz/model/music_data.dart';
+import 'package:soundz/widget/custom_navigator.dart';
 import 'package:soundz/widget/music_view.dart';
 
 class ReorderPage extends StatefulWidget {
@@ -31,6 +34,7 @@ class _ReorderPageState extends State<ReorderPage> {
 
   @override
   Widget build(BuildContext context) {
+    var musicData = context.read<MusicData>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Oreder'),
@@ -38,17 +42,21 @@ class _ReorderPageState extends State<ReorderPage> {
           TextButton(
             child: const Text('Done'),
             onPressed: () {
-              Navigator.pop(context, _musics);
+              CustomNavigator.of(context).pop(_musics);
             },
           ),
         ],
       ),
       body: ReorderableListView.builder(
         itemCount: _musics.length,
-        itemBuilder: (context, i) => MusicView(
-          _musics[i],
-          key: Key(_musics[i].id),
-        ),
+        itemBuilder: (context, i) => ChangeNotifierProvider.value(
+            key: Key(_musics[i].id),
+            value: musicData,
+            builder: (context, child) {
+              return MusicView(
+                _musics[i],
+              );
+            }),
         onReorder: (int oldIndex, int newIndex) {
           setState(() {
             if (oldIndex < newIndex) {

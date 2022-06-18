@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'package:soundz/model/artist_item.dart';
 import 'package:soundz/model/music.dart';
 import 'package:soundz/model/music_data.dart';
@@ -50,6 +52,7 @@ class PlaylistItem with ChangeNotifier {
   void loadArtists() async {
     var artistsRef = FirebaseFirestore.instance.collection('artists');
     for (var info in artists) {
+      if (info.unknown) continue;
       ArtistItemInfo artist;
       var artistRef = await artistsRef.doc(info.id).get();
       if (artistRef.exists) {
@@ -70,7 +73,8 @@ class PlaylistItem with ChangeNotifier {
     }
   }
 
-  Future<void> loadMusics(MusicData musicData) async {
+  Future<void> loadMusics(BuildContext context) async {
+    var musicData = context.read<MusicData>();
     loading = true;
     notifyListeners();
     // if (musicData.favoriteMusics.isEmpty) {

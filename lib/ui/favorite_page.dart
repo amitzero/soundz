@@ -6,6 +6,7 @@ import 'package:soundz/model/music.dart';
 import 'package:soundz/model/music_data.dart';
 import 'package:soundz/model/utilities.dart';
 import 'package:soundz/ui/reorder_page.dart';
+import 'package:soundz/widget/custom_navigator.dart';
 import 'package:soundz/widget/music_view.dart';
 
 class FavoritePage extends StatefulWidget {
@@ -47,10 +48,13 @@ class _FavoritePageState extends State<FavoritePage> {
           TextButton(
             child: const Text('Edit'),
             onPressed: () async {
-              List<Music>? result = await Navigator.push(
-                context,
-                ReorderPageRoute(List.from(_musics)),
+              List<Music>? result = await CustomNavigator.of(context).push(
+                CustomNavigationPageRoute(
+                  child: ReorderPage(List.from(_musics)),
+                ),
               );
+              // log('$result', name: 'result');
+              // return;
               if (result != null &&
                   result.identityCode != _musics.identityCode) {
                 log(
@@ -58,7 +62,9 @@ class _FavoritePageState extends State<FavoritePage> {
                   name: 'order changed',
                 );
                 setState(() {
-                  _musics = result;
+                  log('$_musics', name: '_musics');
+                  log('$result', name: 'result');
+                  musicData.favoriteMusics = result;
                 });
                 Utilities.refreshPlaylist(
                   musicData.database,

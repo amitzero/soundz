@@ -29,18 +29,23 @@ class PlaylistUpdate with ChangeNotifier {
       notifyListeners();
       return info;
     } else {
-      final channel = await _ytClient.channels.get(channelId);
-      var artist = ArtistItemInfo(
-        id: channelId.value,
-        name: channel.title,
-        url: channel.url,
-        image: channel.logoUrl,
-      );
+      ArtistItemInfo artist;
+      try {
+        var channel = await _ytClient.channels.get(channelId);
+        artist = ArtistItemInfo(
+          id: channelId.value,
+          name: channel.title,
+          url: channel.url,
+          image: channel.logoUrl,
+        );
+      } on Exception {
+        artist = ArtistItemInfo.unknown();
+      }
       current.artists.add(artist);
       notifyListeners();
       FirebaseFirestore.instance
           .collection('artists')
-          .doc(channelId.value)
+          .doc(artist.id)
           .set(artist.toJson());
       return artist;
     }
@@ -59,7 +64,7 @@ class PlaylistUpdate with ChangeNotifier {
     current.artists.clear();
     notifyListeners();
     final playlist = await _ytClient.playlists.get(current.id);
-    updateDevItem(playlistId, playlist.title);
+    updateDevItem(playlistId, '${playlist.title} - ${playlist.author}');
     current.title = playlist.title;
     current.length = playlist.videoCount ?? -1;
     current.image = null;
@@ -70,7 +75,7 @@ class PlaylistUpdate with ChangeNotifier {
       var music = Music(
         id: video.id.value,
         title: Utilities.trimTitle(video.title),
-        artist: ArtistItem(id: artist.id, name: artist.name),
+        artist: artist,
         duration: video.duration ?? Duration.zero,
         thumbnail: video.thumbnails.highResUrl,
       );

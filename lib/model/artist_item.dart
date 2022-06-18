@@ -5,6 +5,8 @@ class ArtistItem {
     required this.id,
     required this.name,
   });
+  ArtistItem.unknown(): id = 'none', name = 'Unknown';
+  bool get unknown => id == 'none';
   ArtistItem.fromJson(Map<String, dynamic> map)
       : id = map['id'],
         name = map['name'];
@@ -26,6 +28,8 @@ class ArtistItemInfo extends ArtistItem {
     required this.url,
     this.image,
   });
+
+  ArtistItemInfo.unknown(): url = 'none', super.unknown();
 
   ArtistItemInfo.fromJson(Map<String, dynamic> map)
       : url = map['url'],
